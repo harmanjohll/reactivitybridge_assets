@@ -100,9 +100,9 @@
     }
     
     :root {
-      --TABLE_SIZE: 600px;
-      --CARD_WIDTH: 80px;
-      --CARD_HEIGHT: 112px;
+      --TABLE_SIZE: 450px;
+      --CARD_WIDTH: 70px;
+      --CARD_HEIGHT: 98px;
     }
     
     /* ---------- Table & Slots ---------- */
@@ -225,9 +225,24 @@
       #game-container { flex-direction: column; height: auto; }
       .play-area { height: 65vh; padding: 10px; }
       #trick-summary { width: 100%; height: 25vh; border-left: none; border-top: 1px solid #ccc; }
-      .bench.west, .bench.east { flex-direction: row; top: 50%; transform: translateY(-50%); }
-      .bench.west { left: 0; transform: translate(-50%, -50%) rotate(90deg); }
-      .bench.east { right: 0; transform: translate(50%, -50%) rotate(-90deg); }
+      
+      .bench.west, .bench.east { 
+        flex-direction: row; 
+        top: 50%;
+        gap: 1px;
+      }
+      .bench.west {
+        /* This value moves the bench from the left edge */
+        left: 120px; 
+        transform: rotate(90deg); 
+        transform-origin: center;
+      }
+      .bench.east {
+        /* This value moves the bench from the right edge */
+        right: 120px; 
+        transform: rotate(-90deg);
+        transform-origin: center;
+      }
     }
     @media (max-width: 768px) {
         .header { justify-content: center; gap: 10px; }
@@ -553,7 +568,6 @@
       game.currentTrickPlays.push({ player, card });
       const slot = document.getElementById("slot-" + player);
       slot.innerHTML = "";
-      // When playing a card to the trick, always show its face
       slot.appendChild(createCardElement(card, player, false, true));
 
       if (game.currentTrickPlays.length === 1) game.stateRequired = card.state;
@@ -571,15 +585,15 @@
     function computerPlay(side) {
         const hand = game.hands[side];
         const ledState = game.stateRequired;
-        const canFollowSuit = hand.some(c => c.state === ledState);
+        const canFollowSuit = ledState ? hand.some(c => c.state === ledState) : true;
 
         let choice;
-        if (canFollowSuit) {
+        if (canFollowSuit && ledState) {
             const followSuitCards = hand.filter(c => c.state === ledState);
             followSuitCards.sort((a, b) => ledState === "neutral" ? reactivityOrder[b.symbol] - reactivityOrder[a.symbol] : reactivityOrder[a.symbol] - reactivityOrder[b.symbol]);
             choice = followSuitCards[0];
         } else {
-            if (game.trumpState) {
+            if (game.trumpState && game.trumpState !== ledState) {
                 const trumpCards = hand.filter(c => c.state === game.trumpState);
                 if (trumpCards.length > 0) {
                     trumpCards.sort((a, b) => game.trumpState === "neutral" ? reactivityOrder[b.symbol] - reactivityOrder[a.symbol] : reactivityOrder[a.symbol] - reactivityOrder[b.symbol]);

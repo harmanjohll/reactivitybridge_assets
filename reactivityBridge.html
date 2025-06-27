@@ -256,7 +256,6 @@
       bidding:false,bids:[],contract:null, trumpState:null, declarer:null
     };
     
-    // DOM Elements - RESTORED
     const biddingModalOverlay = document.getElementById('bidding-modal-overlay');
     const bidHistoryEl = document.getElementById('bid-history');
     const playerBidControlsEl = document.getElementById('player-bid-controls');
@@ -264,6 +263,7 @@
 
     // Utility functions
     function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    
     function createCardElement(card, side, clickable=false, forceShow=false){
       const img=document.createElement("img");
       const backURL= baseURL+"back-of-card.png";
@@ -277,6 +277,7 @@
       }
       return img;
     }
+
     function updateHandDisplay(side){
       const bench=document.getElementById(`bench-${side}`);
       bench.innerHTML="";
@@ -316,7 +317,7 @@
       document.getElementById("table-text").innerText=msg;
     }
 
-    // Bidding Logic - RESTORED
+    // Bidding Logic
     function startBidding() {
         game.bidding = true;
         game.bids = [];
@@ -499,20 +500,25 @@
       game.hands.west =d.slice(6,12);
       game.hands.north=d.slice(12,18);
       game.hands.east =d.slice(18,24);
+      
+      // THE ONLY CHANGE IS HERE: Order of operations fixed
+      const diff=document.getElementById("difficulty").value;
+      game.difficulty=diff; // 1. Set difficulty FIRST
+
       Object.assign(game,{
         currentTrickPlays:[],currentTurnIndex:0,
         trickCount:{NS:0,WE:0},trickNumber:1,
-        stateRequired:null,contract:null, trumpState:null,declarer:null
+        stateRequired:null,contract:null, trumpState:null,declarer:null,
+        difficulty: diff // also ensure it's set in the reset object
       });
       document.getElementById("table-text").innerText="Table";
       document.getElementById("trick-history").innerHTML="";
       document.getElementById("contract-display").innerText="No contract";
-      resetTrickSlots(); updateScoreboard(); updateAllHands();
+      resetTrickSlots(); 
+      updateScoreboard(); 
+      updateAllHands(); // 2. THEN update hands, which now know the correct difficulty
 
-      const diff=document.getElementById("difficulty").value;
-      game.difficulty=diff;
       if(diff==="intermediate"||diff==="advanced"){
-        // Bidding logic now restored and called correctly
         setTimeout(startBidding, 500);
       } else {
         document.getElementById("table-text").innerText="South leads";
